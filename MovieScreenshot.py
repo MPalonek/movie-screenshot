@@ -7,7 +7,7 @@ import worker
 from datetime import date
 from PyQt5.QtCore import QThreadPool
 import os
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QFileDialog, QLabel
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QFileDialog, QLabel, QApplication
 from random import randint
 import cv2
 from math import floor
@@ -38,54 +38,56 @@ class ViewWindow(QWidget):
         self.cur_selected_img_set = 0
         self.img_state = [0, 0, 0, 0, 0]
 
-    def on_clicked_show1Button(self):
-        self.cur_selected_img_set = 0
-        pixmap = QtGui.QImage(g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].data, g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[1], g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[0],
+    def draw_image_and_update_labels(self):
+        # To display an OpenCV image, you have to convert the image into a QImage then into a QPixmap where you can
+        # display the image with a QLabel (dont be scared by those long global variable names...)
+        pixmap = QtGui.QImage(g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].data,
+                              g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[1],
+                              g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[0],
                               QtGui.QImage.Format_RGB888).rgbSwapped()
         self.ui.imageLabel.setPixmap(QPixmap.fromImage(pixmap))
-        self.ui.imageCountLabel.setText("{}/{}".format(self.img_state[self.cur_selected_img_set] + 1,
-                                                       len(g_images_list[self.cur_selected_img_set])))
-        self.ui.timeLabel.setText("{}%".format(g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]]))
+        self.ui.imageCountLabel.setText("{}/{}".format(self.img_state[self.cur_selected_img_set] + 1, len(g_images_list[self.cur_selected_img_set])))
+        seconds = g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][0] % 60
+        minutes = floor((g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][0] % 3600) / 60)
+        hours = floor(g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][0] / 3600)
+        percentage = g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][1]
+        self.ui.timeLabel.setText("{:02d}:{:02d}:{:02d} ({}%)".format(hours, minutes, seconds, percentage))
+
+    def highlight_clicked_button(self, clicked_button):
+        # tone down all buttons
+        self.ui.show1Button.setStyleSheet("")
+        self.ui.show2Button.setStyleSheet("")
+        self.ui.show3Button.setStyleSheet("")
+        self.ui.show4Button.setStyleSheet("")
+        self.ui.show5Button.setStyleSheet("")
+
+        # highlight clicked button
+        clicked_button.setStyleSheet("QPushButton { background-color : rgba(125, 125, 255, 75%); }")
+
+    def on_clicked_show1Button(self):
+        self.cur_selected_img_set = 0
+        self.draw_image_and_update_labels()
+        self.highlight_clicked_button(self.ui.show1Button)
 
     def on_clicked_show2Button(self):
         self.cur_selected_img_set = 1
-        pixmap = QtGui.QImage(g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].data, g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[1], g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[0],
-                              QtGui.QImage.Format_RGB888).rgbSwapped()
-        self.ui.imageLabel.setPixmap(QPixmap.fromImage(pixmap))
-        self.ui.imageCountLabel.setText("{}/{}".format(self.img_state[self.cur_selected_img_set] + 1,
-                                                       len(g_images_list[self.cur_selected_img_set])))
-        self.ui.timeLabel.setText(
-            "{}%".format(g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]]))
+        self.draw_image_and_update_labels()
+        self.highlight_clicked_button(self.ui.show2Button)
 
     def on_clicked_show3Button(self):
         self.cur_selected_img_set = 2
-        pixmap = QtGui.QImage(g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].data, g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[1], g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[0],
-                              QtGui.QImage.Format_RGB888).rgbSwapped()
-        self.ui.imageLabel.setPixmap(QPixmap.fromImage(pixmap))
-        self.ui.imageCountLabel.setText("{}/{}".format(self.img_state[self.cur_selected_img_set] + 1,
-                                                       len(g_images_list[self.cur_selected_img_set])))
-        self.ui.timeLabel.setText(
-            "{}%".format(g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]]))
+        self.draw_image_and_update_labels()
+        self.highlight_clicked_button(self.ui.show3Button)
 
     def on_clicked_show4Button(self):
         self.cur_selected_img_set = 3
-        pixmap = QtGui.QImage(g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].data, g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[1], g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[0],
-                              QtGui.QImage.Format_RGB888).rgbSwapped()
-        self.ui.imageLabel.setPixmap(QPixmap.fromImage(pixmap))
-        self.ui.imageCountLabel.setText("{}/{}".format(self.img_state[self.cur_selected_img_set] + 1,
-                                                       len(g_images_list[self.cur_selected_img_set])))
-        self.ui.timeLabel.setText(
-            "{}%".format(g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]]))
+        self.draw_image_and_update_labels()
+        self.highlight_clicked_button(self.ui.show4Button)
 
     def on_clicked_show5Button(self):
         self.cur_selected_img_set = 4
-        pixmap = QtGui.QImage(g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].data, g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[1], g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[0],
-                              QtGui.QImage.Format_RGB888).rgbSwapped()
-        self.ui.imageLabel.setPixmap(QPixmap.fromImage(pixmap))
-        self.ui.imageCountLabel.setText("{}/{}".format(self.img_state[self.cur_selected_img_set] + 1,
-                                                       len(g_images_list[self.cur_selected_img_set])))
-        self.ui.timeLabel.setText(
-            "{}%".format(g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]]))
+        self.draw_image_and_update_labels()
+        self.highlight_clicked_button(self.ui.show5Button)
 
     def on_clicked_prevImgButton(self):
         # if we are at first picture do nothing
@@ -94,14 +96,7 @@ class ViewWindow(QWidget):
 
         # decrement img_state and show next picture
         self.img_state[self.cur_selected_img_set] = self.img_state[self.cur_selected_img_set] - 1
-        pixmap = QtGui.QImage(g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].data,
-                              g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[1],
-                              g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[0],
-                              QtGui.QImage.Format_RGB888).rgbSwapped()
-        self.ui.imageLabel.setPixmap(QPixmap.fromImage(pixmap))
-        self.ui.imageCountLabel.setText("{}/{}".format(self.img_state[self.cur_selected_img_set] + 1, len(g_images_list[self.cur_selected_img_set])))
-        self.ui.timeLabel.setText(
-            "{}%".format(g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]]))
+        self.draw_image_and_update_labels()
 
     def on_clicked_nextImgButton(self):
         # if we are at last picture do nothing
@@ -110,14 +105,7 @@ class ViewWindow(QWidget):
 
         # increment img_state and show next picture
         self.img_state[self.cur_selected_img_set] = self.img_state[self.cur_selected_img_set] + 1
-        pixmap = QtGui.QImage(g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].data,
-                              g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[1],
-                              g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[0],
-                              QtGui.QImage.Format_RGB888).rgbSwapped()
-        self.ui.imageLabel.setPixmap(QPixmap.fromImage(pixmap))
-        self.ui.imageCountLabel.setText("{}/{}".format(self.img_state[self.cur_selected_img_set] + 1, len(g_images_list[self.cur_selected_img_set])))
-        self.ui.timeLabel.setText(
-            "{}%".format(g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]]))
+        self.draw_image_and_update_labels()
 
     def play_movie(self):
         # works only on windows, use subprocess for linux
@@ -204,9 +192,9 @@ class MovieScreenshot(QtWidgets.QMainWindow):
 
     def on_roll_button_clicked(self):
         global g_images_list, g_selected_video_path, g_video_progress
-        g_video_progress = []
         g_images_list = []
         g_selected_video_path = []
+        g_video_progress = []
         video_list = g_video_list
         for i in range(5):
             temp = randint(0, len(video_list) - 1)
@@ -215,23 +203,19 @@ class MovieScreenshot(QtWidgets.QMainWindow):
             g_images_list.append(self.get_video_frames(video, 10))
             g_selected_video_path.append(video)
             video_list.remove(video)
-        # To display an OpenCV image, you have to convert the image into a QImage then into a QPixmap where you can
-        # display the image with a QLabel
-        # pixmap = self.images_list[0][0]
-        pixmap = QtGui.QImage(g_images_list[0][0].data, g_images_list[0][0].shape[1], g_images_list[0][0].shape[0], QtGui.QImage.Format_RGB888).rgbSwapped()
-        # pixmap = QPixmap(QtGui.QImage(self.images_list[0][0].data, self.images_list[0][0].shape[1], self.images_list[0][0].shape[0], QtGui.QImage.Format_RGB888).rgbSwapped())
 
         self.w = ViewWindow()
-        self.w.imageLabel.setPixmap(QPixmap.fromImage(pixmap))
-        self.w.imageCountLabel.setText("1/{}".format(len(g_images_list[0])))
+        self.w.highlight_clicked_button(self.w.show1Button)
+        self.w.draw_image_and_update_labels()
         self.w.show()
 
     def get_video_frames(self, video_path, number_of_frames):
         global g_video_progress
         frames = []
-        procent_progress = []
+        progress = []
         cap = cv2.VideoCapture(video_path)
         total_frames = cap.get(7)
+        logging.info("Total frames: {}".format(total_frames))
 
         # take frame from beginning (0.05-0.1)
         # take frame from ending (0.9 - 0.95)
@@ -242,15 +226,14 @@ class MovieScreenshot(QtWidgets.QMainWindow):
             frame_number.append(randint(floor(0.1 * total_frames), floor(0.9 * total_frames)))
         frame_number.sort()
         logging.info("Drawn frames: {}".format(frame_number))
-        for el in frame_number:
-            procent_progress.append(floor(el / total_frames * 100))
 
-        g_video_progress.append(procent_progress)
         for i in range(len(frame_number)):
             cap.set(1, frame_number[i])
             ret, frame = cap.read()
+            progress.append([int(cap.get(cv2.CAP_PROP_POS_MSEC)/1000), int(frame_number[i] / total_frames * 100)])
             # cv2.imwrite('D:\\Repo\\movie-screenshot\\test\\frame_{}.jpg'.format(i), frame)
             frames.append(frame)
+        g_video_progress.append(progress)
         return frames
 
     def play_movie(self, video_path):
