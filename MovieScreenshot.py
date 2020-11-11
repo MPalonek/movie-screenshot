@@ -11,8 +11,10 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QFileDialog, QLabel, QApplicat
 from random import randint
 import cv2
 from math import floor
+import pathlib
 
 # TODO
+# 1. threading - app takes too long time being unresponsive
 
 g_directory = ""
 g_video_list = []
@@ -52,6 +54,8 @@ class ViewWindow(QWidget):
         hours = floor(g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][0] / 3600)
         percentage = g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][1]
         self.ui.timeLabel.setText("{:02d}:{:02d}:{:02d} ({}%)".format(hours, minutes, seconds, percentage))
+        title = pathlib.PurePath(g_selected_video_path[self.cur_selected_img_set]).name
+        self.ui.titleLabel.setText("{}".format(title))
 
     def highlight_clicked_button(self, clicked_button):
         # tone down all buttons
@@ -62,34 +66,40 @@ class ViewWindow(QWidget):
         self.ui.show5Button.setStyleSheet("")
 
         # highlight clicked button
-        clicked_button.setStyleSheet("QPushButton { background-color : rgba(125, 125, 255, 75%); }")
+        clicked_button.setStyleSheet("QPushButton { background-color : rgb(0, 120, 215); }")
 
     def on_clicked_show1Button(self):
+        logging.info("Clicked on 1 button")
         self.cur_selected_img_set = 0
         self.draw_image_and_update_labels()
         self.highlight_clicked_button(self.ui.show1Button)
 
     def on_clicked_show2Button(self):
+        logging.info("Clicked on 2 button")
         self.cur_selected_img_set = 1
         self.draw_image_and_update_labels()
         self.highlight_clicked_button(self.ui.show2Button)
 
     def on_clicked_show3Button(self):
+        logging.info("Clicked on 3 button")
         self.cur_selected_img_set = 2
         self.draw_image_and_update_labels()
         self.highlight_clicked_button(self.ui.show3Button)
 
     def on_clicked_show4Button(self):
+        logging.info("Clicked on 4 button")
         self.cur_selected_img_set = 3
         self.draw_image_and_update_labels()
         self.highlight_clicked_button(self.ui.show4Button)
 
     def on_clicked_show5Button(self):
+        logging.info("Clicked on 5 button")
         self.cur_selected_img_set = 4
         self.draw_image_and_update_labels()
         self.highlight_clicked_button(self.ui.show5Button)
 
     def on_clicked_prevImgButton(self):
+        logging.info("Clicked on << button")
         # if we are at first picture do nothing
         if self.img_state[self.cur_selected_img_set] == 0:
             return
@@ -99,6 +109,7 @@ class ViewWindow(QWidget):
         self.draw_image_and_update_labels()
 
     def on_clicked_nextImgButton(self):
+        logging.info("Clicked on >> button")
         # if we are at last picture do nothing
         if self.img_state[self.cur_selected_img_set] == (len(g_images_list[self.cur_selected_img_set]) - 1):
             return
@@ -108,9 +119,10 @@ class ViewWindow(QWidget):
         self.draw_image_and_update_labels()
 
     def play_movie(self):
+        logging.info("Clicked on Play button")
         # works only on windows, use subprocess for linux
+        logging.info("Playing: {}".format(g_selected_video_path[self.cur_selected_img_set]))
         os.startfile(g_selected_video_path[self.cur_selected_img_set])
-
 
 
 class MovieScreenshot(QtWidgets.QMainWindow):
@@ -144,6 +156,7 @@ class MovieScreenshot(QtWidgets.QMainWindow):
 
 
     def on_directory_label_clicked(self):
+        logging.info("Clicked on Directory label")
         global g_directory
         g_directory = self.getDir()
 
@@ -168,7 +181,7 @@ class MovieScreenshot(QtWidgets.QMainWindow):
         g_video_list = []
         for file in os.listdir(directory):
             if file.endswith(".mp4") or file.endswith(".avi") or file.endswith(".mkv"):
-                g_video_list.append(directory + "//" + file)
+                g_video_list.append(directory + "/" + file)
 
     def get_recursive_video_list_from_dir(self, directory):
         global g_video_list
@@ -176,10 +189,10 @@ class MovieScreenshot(QtWidgets.QMainWindow):
         for root, dirs, files in os.walk(directory):
             for file in files:
                 if file.endswith(".mp4") or file.endswith(".avi") or file.endswith(".mkv"):
-                    g_video_list.append(root + "//" + file)
+                    g_video_list.append(root + "/" + file)
 
     def on_recursive_checkbox_clicked(self):
-        logging.info("Clicked on recursive check box. State: {}".format(self.ui.recursiveCheckBox.isChecked()))
+        logging.info("Clicked on recursive checkbox. State: {}".format(self.ui.recursiveCheckBox.isChecked()))
         if g_directory == "":
             return
         if self.ui.recursiveCheckBox.isChecked():
@@ -191,6 +204,7 @@ class MovieScreenshot(QtWidgets.QMainWindow):
         logging.info('Selected directory: {} - found {} movies'.format(g_directory, len(g_video_list)))
 
     def on_roll_button_clicked(self):
+        logging.info("Clicked on Roll button")
         global g_images_list, g_selected_video_path, g_video_progress
         g_images_list = []
         g_selected_video_path = []
@@ -200,7 +214,7 @@ class MovieScreenshot(QtWidgets.QMainWindow):
             temp = randint(0, len(video_list) - 1)
             video = video_list[temp]
             logging.info("Drawn movie {}: {}".format(i+1, video))
-            g_images_list.append(self.get_video_frames(video, 10))
+            g_images_list.append(self.get_video_frames(video, 12))
             g_selected_video_path.append(video)
             video_list.remove(video)
 
@@ -214,7 +228,7 @@ class MovieScreenshot(QtWidgets.QMainWindow):
         frames = []
         progress = []
         cap = cv2.VideoCapture(video_path)
-        total_frames = cap.get(7)
+        total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
         logging.info("Total frames: {}".format(total_frames))
 
         # take frame from beginning (0.05-0.1)
@@ -227,6 +241,11 @@ class MovieScreenshot(QtWidgets.QMainWindow):
         frame_number.sort()
         logging.info("Drawn frames: {}".format(frame_number))
 
+        logging.info("Creating collab image")
+        collab_img = self.create_combined_image(cap)
+        frames.append(collab_img)
+
+        logging.info("Drawing full images")
         for i in range(len(frame_number)):
             cap.set(1, frame_number[i])
             ret, frame = cap.read()
@@ -236,9 +255,55 @@ class MovieScreenshot(QtWidgets.QMainWindow):
         g_video_progress.append(progress)
         return frames
 
-    def play_movie(self, video_path):
-        # works only on windows, use subprocess for linux
-        os.startfile(video_path)
+    def create_combined_image(self, video):
+        # get 9 images
+        frames = []
+        total_frames = video.get(cv2.CAP_PROP_FRAME_COUNT)
+        for i in range(10, 100, 10):
+            video.set(1, floor(i/100 * total_frames))
+            ret, frame = video.read()
+            # we got 1600x900 (4:3) to cover - anything wider must be scaled by width
+            # (you shouldnt find anything with narrower aspect ratio, so no scaling by height)
+            resized_frame = self.image_resize(frame, width=530)
+            frames.append(resized_frame)
+
+        # vertical concatenation
+        v_img = []
+        for i in range(3):
+            v_img.append(cv2.vconcat([frames[i*3 + 0], frames[i*3 + 1], frames[i*3 + 2]]))
+
+        # horizontal concatenation
+        h_img = cv2.hconcat([v_img[0], v_img[1], v_img[2]])
+        return h_img
+
+    def image_resize(self, image, width=None, height=None, inter=cv2.INTER_AREA):
+        # initialize the dimensions of the image to be resized and
+        # grab the image size
+        dim = None
+        (h, w) = image.shape[:2]
+
+        # if both the width and height are None, then return the
+        # original image
+        if width is None and height is None:
+            return image
+
+        # check to see if the width is None
+        if width is None:
+            # calculate the ratio of the height and construct the
+            # dimensions
+            r = height / float(h)
+            dim = (int(w * r), height)
+
+        # otherwise, the height is None
+        else:
+            # calculate the ratio of the width and construct the
+            # dimensions
+            r = width / float(w)
+            dim = (width, int(h * r))
+
+        # resize the image
+        resized = cv2.resize(image, dim, interpolation=inter)
+        return resized
 
 
 def parse_arguments():

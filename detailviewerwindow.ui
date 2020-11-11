@@ -202,10 +202,28 @@ background-color: white;
 }</string>
    </property>
    <property name="text">
-    <string>TextLabel</string>
+    <string>TimeLabel</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="titleLabel">
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>1030</y>
+     <width>611</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>TitleLabel</string>
    </property>
   </widget>
  </widget>
