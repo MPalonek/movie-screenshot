@@ -15,6 +15,9 @@ import pathlib
 
 # TODO
 # 1. threading - app takes too long time being unresponsive
+# 2. resizing window by user
+# 3. selecting videos manually (not by pointing to directory but movies itself)
+# 4. package app (maybe make it like .exe)
 
 g_directory = ""
 g_video_list = []
@@ -43,17 +46,22 @@ class ViewWindow(QWidget):
     def draw_image_and_update_labels(self):
         # To display an OpenCV image, you have to convert the image into a QImage then into a QPixmap where you can
         # display the image with a QLabel (dont be scared by those long global variable names...)
+
         pixmap = QtGui.QImage(g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].data,
                               g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[1],
                               g_images_list[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]].shape[0],
                               QtGui.QImage.Format_RGB888).rgbSwapped()
         self.ui.imageLabel.setPixmap(QPixmap.fromImage(pixmap))
         self.ui.imageCountLabel.setText("{}/{}".format(self.img_state[self.cur_selected_img_set] + 1, len(g_images_list[self.cur_selected_img_set])))
-        seconds = g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][0] % 60
-        minutes = floor((g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][0] % 3600) / 60)
-        hours = floor(g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][0] / 3600)
-        percentage = g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][1]
-        self.ui.timeLabel.setText("{:02d}:{:02d}:{:02d} ({}%)".format(hours, minutes, seconds, percentage))
+        if g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][0] == 0:
+            self.ui.timeLabel.setHidden(True)
+        else:
+            seconds = g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][0] % 60
+            minutes = floor((g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][0] % 3600) / 60)
+            hours = floor(g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][0] / 3600)
+            percentage = g_video_progress[self.cur_selected_img_set][self.img_state[self.cur_selected_img_set]][1]
+            self.ui.timeLabel.setHidden(False)
+            self.ui.timeLabel.setText("{:02d}:{:02d}:{:02d} ({:02d}%)".format(hours, minutes, seconds, percentage))
         title = pathlib.PurePath(g_selected_video_path[self.cur_selected_img_set]).name
         self.ui.titleLabel.setText("{}".format(title))
 
@@ -99,7 +107,7 @@ class ViewWindow(QWidget):
         self.highlight_clicked_button(self.ui.show5Button)
 
     def on_clicked_prevImgButton(self):
-        logging.info("Clicked on << button")
+        logging.info("Clicked on << button. Currently on {}/{}".format(self.img_state[self.cur_selected_img_set] + 1, len(g_images_list[self.cur_selected_img_set])))
         # if we are at first picture do nothing
         if self.img_state[self.cur_selected_img_set] == 0:
             return
@@ -109,7 +117,7 @@ class ViewWindow(QWidget):
         self.draw_image_and_update_labels()
 
     def on_clicked_nextImgButton(self):
-        logging.info("Clicked on >> button")
+        logging.info("Clicked on >> button. Currently on {}/{}".format(self.img_state[self.cur_selected_img_set] + 1, len(g_images_list[self.cur_selected_img_set])))
         # if we are at last picture do nothing
         if self.img_state[self.cur_selected_img_set] == (len(g_images_list[self.cur_selected_img_set]) - 1):
             return
@@ -180,7 +188,7 @@ class MovieScreenshot(QtWidgets.QMainWindow):
         global g_video_list
         g_video_list = []
         for file in os.listdir(directory):
-            if file.endswith(".mp4") or file.endswith(".avi") or file.endswith(".mkv"):
+            if file.endswith(".mp4") or file.endswith(".avi") or file.endswith(".mkv") or file.endswith(".wmv"):
                 g_video_list.append(directory + "/" + file)
 
     def get_recursive_video_list_from_dir(self, directory):
@@ -244,14 +252,16 @@ class MovieScreenshot(QtWidgets.QMainWindow):
         logging.info("Creating collab image")
         collab_img = self.create_combined_image(cap)
         frames.append(collab_img)
+        progress.append([0, 0])
 
         logging.info("Drawing full images")
         for i in range(len(frame_number)):
             cap.set(1, frame_number[i])
             ret, frame = cap.read()
             progress.append([int(cap.get(cv2.CAP_PROP_POS_MSEC)/1000), int(frame_number[i] / total_frames * 100)])
+            resized_frame = self.image_resize(frame, width=1920)
             # cv2.imwrite('D:\\Repo\\movie-screenshot\\test\\frame_{}.jpg'.format(i), frame)
-            frames.append(frame)
+            frames.append(resized_frame)
         g_video_progress.append(progress)
         return frames
 
@@ -264,7 +274,8 @@ class MovieScreenshot(QtWidgets.QMainWindow):
             ret, frame = video.read()
             # we got 1600x900 (4:3) to cover - anything wider must be scaled by width
             # (you shouldnt find anything with narrower aspect ratio, so no scaling by height)
-            resized_frame = self.image_resize(frame, width=530)
+            # scaling to 1920 width, qt has really hard time with unusual aspect ratios (perhaps you need to add step)
+            resized_frame = self.image_resize(frame, width=640)
             frames.append(resized_frame)
 
         # vertical concatenation
