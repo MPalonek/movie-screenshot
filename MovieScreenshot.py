@@ -25,6 +25,7 @@ g_selected_video_path = []
 g_video_progress = []
 g_images_list = []
 
+
 class ViewWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -162,7 +163,6 @@ class MovieScreenshot(QtWidgets.QMainWindow):
         self.ui.recursiveCheckBox.clicked.connect(self.on_recursive_checkbox_clicked)
         self.ui.rollButton.clicked.connect(self.on_roll_button_clicked)
 
-
     def on_directory_label_clicked(self):
         logging.info("Clicked on Directory label")
         global g_directory
@@ -187,6 +187,8 @@ class MovieScreenshot(QtWidgets.QMainWindow):
     def get_video_list_from_dir(self, directory):
         global g_video_list
         g_video_list = []
+        if directory == "":
+            return
         for file in os.listdir(directory):
             if file.endswith(".mp4") or file.endswith(".avi") or file.endswith(".mkv") or file.endswith(".wmv"):
                 g_video_list.append(directory + "/" + file)
@@ -278,14 +280,14 @@ class MovieScreenshot(QtWidgets.QMainWindow):
             resized_frame = self.image_resize(frame, width=640)
             frames.append(resized_frame)
 
-        # vertical concatenation
-        v_img = []
-        for i in range(3):
-            v_img.append(cv2.vconcat([frames[i*3 + 0], frames[i*3 + 1], frames[i*3 + 2]]))
-
         # horizontal concatenation
-        h_img = cv2.hconcat([v_img[0], v_img[1], v_img[2]])
-        return h_img
+        h_img = []
+        for i in range(3):
+            h_img.append(cv2.vconcat([frames[i*3 + 0], frames[i*3 + 1], frames[i*3 + 2]]))
+
+        # vertical concatenation
+        v_img = cv2.hconcat([h_img[0], h_img[1], h_img[2]])
+        return v_img
 
     def image_resize(self, image, width=None, height=None, inter=cv2.INTER_AREA):
         # initialize the dimensions of the image to be resized and
