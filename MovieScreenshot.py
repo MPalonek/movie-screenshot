@@ -82,6 +82,16 @@ class ViewWindow(QWidget):
         # highlight clicked button
         clicked_button.setStyleSheet("QPushButton { background-color : rgb(0, 120, 215); }")
 
+    def hide_redundant_buttons(self, number_of_buttons):
+        if number_of_buttons < 5:
+            self.ui.show5Button.setHidden(True)
+            if number_of_buttons < 4:
+                self.ui.show4Button.setHidden(True)
+                if number_of_buttons < 3:
+                    self.ui.show3Button.setHidden(True)
+                    if number_of_buttons < 2:
+                        self.ui.show2Button.setHidden(True)
+
     def on_clicked_show1Button(self):
         logging.info("Clicked on 1 button")
         self.cur_selected_img_set = 0
@@ -225,7 +235,10 @@ class MovieScreenshot(QtWidgets.QMainWindow):
         g_selected_video_path = []
         g_video_progress = []
         video_list = g_video_list
-        for i in range(5):
+
+        number_of_rolls = int(self.ui.rollNumberComboBox.currentText())
+        logging.info("Rolling {} movies".format(number_of_rolls))
+        for i in range(number_of_rolls):
             temp = randint(0, len(video_list) - 1)
             video = video_list[temp]
             logging.info("Drawn movie {}: {}".format(i+1, video))
@@ -235,6 +248,7 @@ class MovieScreenshot(QtWidgets.QMainWindow):
 
         self.w = ViewWindow()
         self.w.highlight_clicked_button(self.w.show1Button)
+        self.w.hide_redundant_buttons(number_of_rolls)
         self.w.draw_image_and_update_labels()
         self.w.show()
 
@@ -288,10 +302,10 @@ class MovieScreenshot(QtWidgets.QMainWindow):
         # horizontal concatenation
         h_img = []
         for i in range(3):
-            h_img.append(cv2.vconcat([frames[i*3 + 0], frames[i*3 + 1], frames[i*3 + 2]]))
+            h_img.append(cv2.hconcat([frames[i*3 + 0], frames[i*3 + 1], frames[i*3 + 2]]))
 
         # vertical concatenation
-        v_img = cv2.hconcat([h_img[0], h_img[1], h_img[2]])
+        v_img = cv2.vconcat([h_img[0], h_img[1], h_img[2]])
         return v_img
 
     def image_resize(self, image, width=None, height=None, inter=cv2.INTER_AREA):
