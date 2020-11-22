@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore, uic
 from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtCore import Qt
 from argparse import ArgumentParser
 import logging
 import sys
@@ -15,9 +16,8 @@ import pathlib
 
 # TODO
 # 1. threading - app takes too long time being unresponsive
-# 2. resizing window by user
-# 3. selecting videos manually (not by pointing to directory but movies itself)
-# 4. package app (maybe make it like .exe)
+# 2. selecting videos manually (not by pointing to directory but movies itself)
+# 3. package app (maybe make it like .exe)
 
 g_directory = ""
 g_video_list = []
@@ -40,6 +40,11 @@ class ViewWindow(QWidget):
         self.ui.nextImgButton.clicked.connect(self.on_clicked_nextImgButton)
 
         self.ui.playButton.clicked.connect(self.play_movie)
+
+        self.ui.gridLayout.addWidget(self.ui.prevImgButton, 0, 0)
+        self.ui.gridLayout.addWidget(self.ui.nextImgButton, 0, 0)
+        self.ui.gridLayout.addWidget(self.ui.timeLabel, 0, 0)
+        self.ui.gridLayout.setAlignment(self.ui.timeLabel, Qt.AlignTop)
 
         self.cur_selected_img_set = 0
         self.img_state = [0, 0, 0, 0, 0]
