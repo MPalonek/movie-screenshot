@@ -32,7 +32,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QComboBox" name="comboBox">
+   <widget class="QComboBox" name="rollNumberComboBox">
     <property name="geometry">
      <rect>
       <x>40</x>
@@ -41,8 +41,11 @@
       <height>22</height>
      </rect>
     </property>
+    <property name="currentText">
+     <string>5</string>
+    </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>4</number>
     </property>
     <property name="maxVisibleItems">
      <number>5</number>
@@ -92,7 +95,7 @@
      <string>Roll</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label">
+   <widget class="QLabel" name="rolNumberLabel">
     <property name="geometry">
      <rect>
       <x>20</x>
