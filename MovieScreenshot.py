@@ -30,12 +30,14 @@ class ViewWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.ui = uic.loadUi("detailviewerwindow.ui", self)
+        self.ui.resize(1366, 768)
 
         self.ui.show1Button.clicked.connect(self.on_clicked_show1Button)
         self.ui.show2Button.clicked.connect(self.on_clicked_show2Button)
         self.ui.show3Button.clicked.connect(self.on_clicked_show3Button)
         self.ui.show4Button.clicked.connect(self.on_clicked_show4Button)
         self.ui.show5Button.clicked.connect(self.on_clicked_show5Button)
+        self.ui.show6Button.clicked.connect(self.on_clicked_show6Button)
         self.ui.prevImgButton.clicked.connect(self.on_clicked_prevImgButton)
         self.ui.nextImgButton.clicked.connect(self.on_clicked_nextImgButton)
 
@@ -47,7 +49,7 @@ class ViewWindow(QWidget):
         self.ui.gridLayout.setAlignment(self.ui.timeLabel, Qt.AlignTop)
 
         self.cur_selected_img_set = 0
-        self.img_state = [0, 0, 0, 0, 0]
+        self.img_state = [0, 0, 0, 0, 0, 0]
 
     def draw_image_and_update_labels(self):
         # To display an OpenCV image, you have to convert the image into a QImage then into a QPixmap where you can
@@ -78,19 +80,22 @@ class ViewWindow(QWidget):
         self.ui.show3Button.setStyleSheet("")
         self.ui.show4Button.setStyleSheet("")
         self.ui.show5Button.setStyleSheet("")
+        self.ui.show6Button.setStyleSheet("")
 
         # highlight clicked button
         clicked_button.setStyleSheet("QPushButton { background-color : rgb(0, 120, 215); }")
 
     def hide_redundant_buttons(self, number_of_buttons):
-        if number_of_buttons < 5:
-            self.ui.show5Button.setHidden(True)
-            if number_of_buttons < 4:
-                self.ui.show4Button.setHidden(True)
-                if number_of_buttons < 3:
-                    self.ui.show3Button.setHidden(True)
-                    if number_of_buttons < 2:
-                        self.ui.show2Button.setHidden(True)
+        if number_of_buttons < 6:
+            self.ui.show6Button.setHidden(True)
+            if number_of_buttons < 5:
+                self.ui.show5Button.setHidden(True)
+                if number_of_buttons < 4:
+                    self.ui.show4Button.setHidden(True)
+                    if number_of_buttons < 3:
+                        self.ui.show3Button.setHidden(True)
+                        if number_of_buttons < 2:
+                            self.ui.show2Button.setHidden(True)
 
     def on_clicked_show1Button(self):
         logging.info("Clicked on 1 button")
@@ -121,6 +126,12 @@ class ViewWindow(QWidget):
         self.cur_selected_img_set = 4
         self.draw_image_and_update_labels()
         self.highlight_clicked_button(self.ui.show5Button)
+
+    def on_clicked_show6Button(self):
+        logging.info("Clicked on 6 button")
+        self.cur_selected_img_set = 5
+        self.draw_image_and_update_labels()
+        self.highlight_clicked_button(self.ui.show6Button)
 
     def on_clicked_prevImgButton(self):
         logging.info("Clicked on << button. Currently on {}/{}".format(self.img_state[self.cur_selected_img_set] + 1, len(g_images_list[self.cur_selected_img_set])))

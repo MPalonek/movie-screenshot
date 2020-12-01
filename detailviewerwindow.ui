@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1388</width>
-    <height>768</height>
+    <height>2467</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -124,7 +124,7 @@
        <item>
         <widget class="QPushButton" name="show5Button">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -137,6 +137,19 @@
          </property>
          <property name="text">
           <string>5</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="show6Button">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>6</string>
          </property>
         </widget>
        </item>
